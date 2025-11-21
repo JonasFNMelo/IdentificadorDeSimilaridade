@@ -6,186 +6,186 @@ import java.util.List;
 public class AVL {
 
 	private No raiz;
-	private int contadorRotacoesSimples;
-	private int contadorRotacoesDuplas;
+	private int qtdRotacoesSimples;
+	private int qtdRotacoesDuplas;
 	
 	public AVL() {
 		this.raiz = null;
-		contadorRotacoesSimples = 0;
-		contadorRotacoesDuplas = 0;
+		qtdRotacoesSimples = 0;
+		qtdRotacoesDuplas = 0;
 	}
 	
 	public AVL(No no) {
 		this.raiz = no;
-		contadorRotacoesSimples = 0;
-		contadorRotacoesDuplas = 0;
+		qtdRotacoesSimples = 0;
+		qtdRotacoesDuplas = 0;
 	}
 	
-	public int getContadorRotacoesSimples() {
-		return contadorRotacoesSimples;
+	public int getQtdRotacoesSimples() {
+		return qtdRotacoesSimples;
 	}
 	
-	public int getContadorRotacoesDuplas() {
-		return contadorRotacoesDuplas;
+	public int getQtdRotacoesDuplas() {
+		return qtdRotacoesDuplas;
 	}
 	
-	public int getContadorRotacoesTotal() {
-		return contadorRotacoesSimples + (contadorRotacoesDuplas * 2);
+	public int getQtdRotacoesTotal() {
+		return qtdRotacoesSimples + (qtdRotacoesDuplas * 2);
 	}
 
-	private int altura(No n) {
+	private int obterAltura(No n) {
 		if (n == null) return 0;
 		return n.getAltura();
 	}
 	
-	private int fatorBalanceamento(No n) {
+	private int calcularFatorBalanceamento(No n) {
 		if (n == null) return 0;
-		return altura(n.getEsq()) - altura(n.getDir());
+		return obterAltura(n.getEsq()) - obterAltura(n.getDir());
 	}
 	
-	public void inserir(Resultado res) {
-		this.raiz = inserirRecursivo(this.raiz , res);
+	public void adicionar(ParComparacao res) {
+		this.raiz = adicionarRecursivo(this.raiz , res);
 	}
 	
-	private No inserirRecursivo(No noAtual, Resultado novoRes) {
-		if (noAtual == null) {
+	private No adicionarRecursivo(No atual, ParComparacao novoRes) {
+		if (atual == null) {
 			No novoNo = new No(novoRes);
 			return novoNo;
-		} else if (novoRes.getSimilaridade() == noAtual.getSimilaridade()) {
-			noAtual.adicionarResultado(novoRes);
-			return noAtual;
+		} else if (novoRes.getSimilaridade() == atual.getSimilaridade()) {
+			atual.adicionarResultado(novoRes);
+			return atual;
 		} else {
-			if (novoRes.getSimilaridade() < noAtual.getSimilaridade()) {
-			    noAtual.setEsq(inserirRecursivo(noAtual.getEsq(), novoRes)); 
+			if (novoRes.getSimilaridade() < atual.getSimilaridade()) {
+			    atual.setEsq(adicionarRecursivo(atual.getEsq(), novoRes)); 
 			} else { 
-			    noAtual.setDir(inserirRecursivo(noAtual.getDir(), novoRes)); 
+			    atual.setDir(adicionarRecursivo(atual.getDir(), novoRes)); 
 			}
 		}
 		
-		noAtual.setAltura(1 + Math.max(altura(noAtual.getEsq()), altura(noAtual.getDir())));
+		atual.setAltura(1 + Math.max(obterAltura(atual.getEsq()), obterAltura(atual.getDir())));
 		
-		int fb = fatorBalanceamento(noAtual);
+		int fb = calcularFatorBalanceamento(atual);
 		
 		// Rotação Simples Direita
-		if (fb > 1 && novoRes.getSimilaridade() < noAtual.getEsq().getSimilaridade()) {
-			contadorRotacoesSimples++;
-			return rotacaoDireita(noAtual);
+		if (fb > 1 && novoRes.getSimilaridade() < atual.getEsq().getSimilaridade()) {
+			qtdRotacoesSimples++;
+			return girarDireita(atual);
 		}
 		
 		// Rotação Simples Esquerda
-		if (fb < -1 && novoRes.getSimilaridade() > noAtual.getDir().getSimilaridade()) {
-			contadorRotacoesSimples++;
-			return rotacaoEsquerda(noAtual);
+		if (fb < -1 && novoRes.getSimilaridade() > atual.getDir().getSimilaridade()) {
+			qtdRotacoesSimples++;
+			return girarEsquerda(atual);
 		}
 		
 		// Rotação Dupla Esquerda-Direita
-		if (fb > 1 && novoRes.getSimilaridade() > noAtual.getEsq().getSimilaridade()) {
-			contadorRotacoesDuplas++;
-			noAtual.setEsq(rotacaoEsquerda(noAtual.getEsq()));
-			return rotacaoDireita(noAtual);
+		if (fb > 1 && novoRes.getSimilaridade() > atual.getEsq().getSimilaridade()) {
+			qtdRotacoesDuplas++;
+			atual.setEsq(girarEsquerda(atual.getEsq()));
+			return girarDireita(atual);
 		}
 		
 		// Rotação Dupla Direita-Esquerda
-		if (fb < -1 && novoRes.getSimilaridade() < noAtual.getDir().getSimilaridade()) {
-			contadorRotacoesDuplas++;
-			noAtual.setDir(rotacaoDireita(noAtual.getDir()));
-	        return rotacaoEsquerda(noAtual);
+		if (fb < -1 && novoRes.getSimilaridade() < atual.getDir().getSimilaridade()) {
+			qtdRotacoesDuplas++;
+			atual.setDir(girarDireita(atual.getDir()));
+	        return girarEsquerda(atual);
 		}
 		
-		return noAtual;
+		return atual;
 	}
 	
-	private No rotacaoDireita(No y) {
+	private No girarDireita(No y) {
 	    No x = y.getEsq();      
-	    No T2 = x.getDir();     
+	    No temp = x.getDir();     
 
 	    x.setDir(y);            
-	    y.setEsq(T2);           
+	    y.setEsq(temp);           
 
-	    y.setAltura(1 + Math.max(altura(y.getEsq()), altura(y.getDir())));
-	    x.setAltura(1 + Math.max(altura(x.getEsq()), altura(x.getDir())));
+	    y.setAltura(1 + Math.max(obterAltura(y.getEsq()), obterAltura(y.getDir())));
+	    x.setAltura(1 + Math.max(obterAltura(x.getEsq()), obterAltura(x.getDir())));
 
 	    return x;
 	}
 	
-	private No rotacaoEsquerda(No x) { 
+	private No girarEsquerda(No x) { 
 	    No y = x.getDir();     
-	    No T2 = y.getEsq();     
+	    No temp = y.getEsq();     
 
 	    y.setEsq(x);            
-	    x.setDir(T2);           
+	    x.setDir(temp);           
 
-	    x.setAltura(1 + Math.max(altura(x.getEsq()), altura(x.getDir())));
-	    y.setAltura(1 + Math.max(altura(y.getEsq()), altura(y.getDir())));
+	    x.setAltura(1 + Math.max(obterAltura(x.getEsq()), obterAltura(x.getDir())));
+	    y.setAltura(1 + Math.max(obterAltura(y.getEsq()), obterAltura(y.getDir())));
 
 	    return y; 
 	}
 	
-	public Resultado getResultadoMenorSimilaridade() {
+	public ParComparacao obterMenorSimilaridade() {
         if (this.raiz == null) return null;
 
-        No noAtual = this.raiz;
+        No atual = this.raiz;
         
-        while (noAtual.getEsq() != null) noAtual = noAtual.getEsq();
+        while (atual.getEsq() != null) atual = atual.getEsq();
   
-        return noAtual.getResultados().get(0);
+        return atual.getResultados().get(0);
     }
 	
-	public List<Resultado> lista(double similaridadeMinima) {
-		List<Resultado> resultadosEncontrados = new ArrayList<>();
-		listaRecursivo(this.raiz, similaridadeMinima, resultadosEncontrados);
-		return resultadosEncontrados;
+	public List<ParComparacao> listar(double simMinima) {
+		List<ParComparacao> encontrados = new ArrayList<>();
+		listarRecursivo(this.raiz, simMinima, encontrados);
+		return encontrados;
 	}
 	
-	private void listaRecursivo(No noAtual, double similaridadeMinima, List<Resultado> lista) {
-		if (noAtual == null) return;
-		if (noAtual.getSimilaridade() < similaridadeMinima) {
-			listaRecursivo(noAtual.getDir(), similaridadeMinima, lista);
-		} else if (noAtual.getSimilaridade() >= similaridadeMinima) {
-			lista.addAll(noAtual.getResultados());
-			listaRecursivo(noAtual.getEsq(), similaridadeMinima, lista);
-			listaRecursivo(noAtual.getDir(), similaridadeMinima, lista);
+	private void listarRecursivo(No atual, double simMinima, List<ParComparacao> lista) {
+		if (atual == null) return;
+		if (atual.getSimilaridade() < simMinima) {
+			listarRecursivo(atual.getDir(), simMinima, lista);
+		} else if (atual.getSimilaridade() >= simMinima) {
+			lista.addAll(atual.getResultados());
+			listarRecursivo(atual.getEsq(), simMinima, lista);
+			listarRecursivo(atual.getDir(), simMinima, lista);
 		}
 	}
 	
-	public List<Resultado> topK(int K, double similaridadeMinima) {
-		if (K <= 0) return new ArrayList<>();
-		List<Resultado> resultadosEncontrados = new ArrayList<>();
-		topKRecursivo(this.raiz, K, similaridadeMinima, resultadosEncontrados);
-		return resultadosEncontrados;
+	public List<ParComparacao> buscarTopK(int k, double simMinima) {
+		if (k <= 0) return new ArrayList<>();
+		List<ParComparacao> encontrados = new ArrayList<>();
+		buscarTopKRecursivo(this.raiz, k, simMinima, encontrados);
+		return encontrados;
 	}
 	
-	private void topKRecursivo(No noAtual, int K, double similaridadeMinima, List<Resultado> lista) {
-		if (noAtual == null) return;
-		if (lista.size() >= K) return;
+	private void buscarTopKRecursivo(No atual, int k, double simMinima, List<ParComparacao> lista) {
+		if (atual == null) return;
+		if (lista.size() >= k) return;
 		
-		topKRecursivo(noAtual.getDir(), K, similaridadeMinima, lista);
+		buscarTopKRecursivo(atual.getDir(), k, simMinima, lista);
 		
-		if (lista.size() >= K) return;
+		if (lista.size() >= k) return;
 		
-		if (noAtual.getSimilaridade() >= similaridadeMinima) {
-			List<Resultado> listaAux = noAtual.getResultados();
-			for (Resultado res : listaAux) {
-				if (lista.size() < K) lista.add(res);
+		if (atual.getSimilaridade() >= simMinima) {
+			List<ParComparacao> auxiliar = atual.getResultados();
+			for (ParComparacao res : auxiliar) {
+				if (lista.size() < k) lista.add(res);
 				else break;
 			}
 			
-			if (lista.size() >= K) return;
+			if (lista.size() >= k) return;
 			
-			topKRecursivo(noAtual.getEsq(), K, similaridadeMinima, lista);
+			buscarTopKRecursivo(atual.getEsq(), k, simMinima, lista);
 		}
 	}
 	
-	public int getAltura() {
-		return altura(this.raiz);
+	public int obterAlturArvore() {
+		return obterAltura(this.raiz);
 	}
 	
-	public int contarNos() {
+	public int contarTotalNos() {
 		return contarNosRecursivo(this.raiz);
 	}
 	
-	private int contarNosRecursivo(No noAtual) {
-		if (noAtual == null) return 0;
-		return 1 + contarNosRecursivo(noAtual.getEsq()) + contarNosRecursivo(noAtual.getDir());
+	private int contarNosRecursivo(No atual) {
+		if (atual == null) return 0;
+		return 1 + contarNosRecursivo(atual.getEsq()) + contarNosRecursivo(atual.getDir());
 	}
 }

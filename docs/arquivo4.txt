@@ -1,0 +1,6 @@
+Java é uma linguagem de programação orientada a objetos muito popular.
+Classes e objetos são os pilares fundamentais da programação em Java.
+Herança permite que classes compartilhem comportamentos e atributos.
+Polimorfismo oferece flexibilidade no tratamento de diferentes tipos.
+Interfaces definem contratos que as classes devem implementar.
+Coleções como listas e mapas facilitam o gerenciamento de dados.

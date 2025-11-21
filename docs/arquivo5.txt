@@ -1,0 +1,6 @@
+Implementar estruturas de dados em Java requer conhecimento sólido.
+Árvores binárias podem ser representadas usando classes e objetos.
+Tabelas hash em Java utilizam funções de dispersão personalizadas.
+A linguagem Java oferece coleções prontas como HashMap e TreeMap.
+Porém implementar manualmente ajuda a entender os algoritmos.
+Balanceamento de árvores AVL exige cuidado com rotações e alturas.

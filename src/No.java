@@ -5,61 +5,61 @@ import java.util.List;
 
 public class No {
 
-    private double similaridade;
-    private List<Resultado> resultados;
-    private No esq;
-    private No dir;
-    private int altura;
+    private double valorSimilaridade;
+    private List<ParComparacao> listaResultados;
+    private No filhoEsq;
+    private No filhoDir;
+    private int alturaNo;
     
-    public No(Resultado resultado) {
-        this.similaridade = resultado.getSimilaridade();
-        this.resultados = new ArrayList<>();
-        this.resultados.add(resultado);
-        this.esq = null;
-        this.dir = null;
-        this.altura = 1;
+    public No(ParComparacao resultado) {
+        this.valorSimilaridade = resultado.getSimilaridade();
+        this.listaResultados = new ArrayList<>();
+        this.listaResultados.add(resultado);
+        this.filhoEsq = null;
+        this.filhoDir = null;
+        this.alturaNo = 1;
     }
 
     public double getSimilaridade() {
-        return similaridade;
+        return valorSimilaridade;
     }
 
-    public List<Resultado> getResultados() {
-        return resultados;
+    public List<ParComparacao> getResultados() {
+        return listaResultados;
     }
 
-    public void adicionarResultado(Resultado resultado) {
-        this.resultados.add(resultado);
+    public void adicionarResultado(ParComparacao resultado) {
+        this.listaResultados.add(resultado);
     }
 
     public No getEsq() {
-        return esq;
+        return filhoEsq;
     }
 
     public void setEsq(No esq) {
-        this.esq = esq;
+        this.filhoEsq = esq;
     }
 
     public No getDir() {
-        return dir;
+        return filhoDir;
     }
 
     public void setDir(No dir) {
-        this.dir = dir;
+        this.filhoDir = dir;
     }
 
     public int getAltura() {
-        return altura;
+        return alturaNo;
     }
 
     public void setAltura(int altura) {
-        this.altura = altura;
+        this.alturaNo = altura;
     }
     
     @Override
     public String toString() {
-        return "No[Similaridade: " + String.format("%.4f", this.similaridade) + 
-               " | Altura: " + this.altura + 
-               " | Qtd. Resultados: " + this.resultados.size() + "]";
+        return "No[Similaridade: " + String.format("%.4f", this.valorSimilaridade) + 
+               " | Altura: " + this.alturaNo + 
+               " | Qtd. Resultados: " + this.listaResultados.size() + "]";
     }
 }

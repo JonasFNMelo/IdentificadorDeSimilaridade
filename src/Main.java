@@ -12,22 +12,20 @@ import java.nio.file.StandardOpenOption;
 
 public class Main {
 
-	private static int contadorDocumentos = 0;
-	private static int contadorComparacoes = 0;
-	private static final String NOME_ARQUIVO_LOG = "resultado.txt";
+	private static int numDocumentos = 0;
+	private static int numComparacoes = 0;
+	private static final String ARQUIVO_LOG = "resultado.txt";
 
-	// Medidores de tempo (em milissegundos)
-	private static long tempoLeituraDocumentos = 0;
-	private static long tempoComparacoes = 0;
-	private static long tempoInsercaoAVL = 0;
-	private static long tempoBuscaAVL = 0;
-	private static long tempoTotal = 0;
+	private static double tempoLeitura = 0;
+	private static double tempoComparacao = 0;
+	private static double tempoInsercao = 0;
+	private static double tempoBusca = 0;
+	private static double tempoExecucao = 0;
 
-	// Estatísticas de colisões
-	private static int totalColisoes = 0;
+	private static int somaColisoes = 0;
 
 	public static void main(String[] args) throws IOException {
-		long inicioTotal = System.currentTimeMillis();
+		long inicio = System.currentTimeMillis();
 
 		String caminho = args[0];
 		double similaridade = Double.parseDouble(args[1]);
@@ -35,33 +33,33 @@ public class Main {
 			throw new IllegalArgumentException("O valor de similaridade deve estar entre 0 e 1.");
 		}
 
-		Map<String, Documento> tabelaArquivos = Main.getTabelaArquivos(caminho);
-		AVL arvore = Main.popularAVL(tabelaArquivos);
-		List<Resultado> lista = new ArrayList<Resultado>();
+		Map<String, Texto> mapaArquivos = Main.carregarArquivos(caminho);
+		AVL arvore = Main.construirAVL(mapaArquivos);
+		List<ParComparacao> lista = new ArrayList<ParComparacao>();
 
 		long inicioBusca = System.currentTimeMillis();
 
 		if (args.length == 3 && args[2].equalsIgnoreCase("lista")) {
-			lista = arvore.lista(similaridade);
-			tempoBuscaAVL = System.currentTimeMillis() - inicioBusca;
-			tempoTotal = System.currentTimeMillis() - inicioTotal;
-			Main.printarSaida(similaridade, lista, arvore);
-			Main.gerarLog(NOME_ARQUIVO_LOG, similaridade, lista, arvore);
+			lista = arvore.listar(similaridade);
+			tempoBusca = System.currentTimeMillis() - inicioBusca;
+			tempoExecucao = System.currentTimeMillis() - inicio;
+			Main.exibirResultado(similaridade, lista, arvore);
+			Main.salvarLog(ARQUIVO_LOG, similaridade, lista, arvore);
 
 		} else if (args.length == 4 && args[2].equalsIgnoreCase("topK")) {
-			int K = Integer.parseInt(args[3]);
-			lista = arvore.topK(K, similaridade);
-			tempoBuscaAVL = System.currentTimeMillis() - inicioBusca;
-			tempoTotal = System.currentTimeMillis() - inicioTotal;
-			Main.printarSaida(similaridade, lista, arvore);
-			Main.gerarLog(NOME_ARQUIVO_LOG, similaridade, lista, arvore);
+			int k = Integer.parseInt(args[3]);
+			lista = arvore.buscarTopK(k, similaridade);
+			tempoBusca = System.currentTimeMillis() - inicioBusca;
+			tempoExecucao = System.currentTimeMillis() - inicio;
+			Main.exibirResultado(similaridade, lista, arvore);
+			Main.salvarLog(ARQUIVO_LOG, similaridade, lista, arvore);
 
 		} else if (args.length == 5 && args[2].equalsIgnoreCase("busca")) {
-			double resultadoBusca = Main.busca(args[3], args[4], tabelaArquivos);
-			tempoBuscaAVL = System.currentTimeMillis() - inicioBusca;
-			tempoTotal = System.currentTimeMillis() - inicioTotal;
-			Main.printarSaida(args[3], args[4], resultadoBusca);
-			Main.gerarLog(NOME_ARQUIVO_LOG, args[3], args[4], resultadoBusca);
+			double resultadoBusca = Main.compararDocs(args[3], args[4], mapaArquivos);
+			tempoBusca = System.currentTimeMillis() - inicioBusca;
+			tempoExecucao = System.currentTimeMillis() - inicio;
+			Main.exibirResultado(args[3], args[4], resultadoBusca);
+			Main.salvarLog(ARQUIVO_LOG, args[3], args[4], resultadoBusca);
 
 		} else {
 			System.out.println("Comando inválido! Use:");
@@ -71,12 +69,12 @@ public class Main {
 		}
 	}
 
-	public static double busca(String arquivoA, String arquivoB, Map<String, Documento> tabelaArquivos) {
-		if (arquivoA.equals(arquivoB))
+	public static double compararDocs(String arqA, String arqB, Map<String, Texto> mapaArquivos) {
+		if (arqA.equals(arqB))
 			return 1.0;
 
-		Documento docA = tabelaArquivos.get(arquivoA);
-		Documento docB = tabelaArquivos.get(arquivoB);
+		Texto docA = mapaArquivos.get(arqA);
+		Texto docB = mapaArquivos.get(arqB);
 
 		if (docA == null || docB == null)
 			throw new IllegalArgumentException("Arquivos inválidos.");
@@ -84,108 +82,96 @@ public class Main {
 		TabelaHash tabA = docA.getTabela();
 		TabelaHash tabB = docB.getTabela();
 
-		ComparadorCosseno comparador = new ComparadorCosseno(tabA, tabB);
+		AnalisadorSimilaridade comparador = new AnalisadorSimilaridade(tabA, tabB);
 
-		return comparador.similaridade();
+		return comparador.calcularSimilaridade();
 	}
 
-	public static Map<String, Documento> getTabelaArquivos(String caminhoPasta) throws IOException {
+	public static Map<String, Texto> carregarArquivos(String caminhoPasta) throws IOException {
 		long inicio = System.currentTimeMillis();
 
 		File pasta = new File(caminhoPasta);
 		if (!pasta.isDirectory())
 			throw new IllegalStateException("O caminho especificado não é um diretório válido: " + pasta.getPath());
 
-		File[] arquivosPasta = pasta.listFiles();
-		if (arquivosPasta == null)
+		File[] arquivos = pasta.listFiles();
+		if (arquivos == null)
 			throw new IOException("Não foi possível listar os arquivos da pasta: " + pasta.getPath());
 
-		Map<String, Documento> tabelaArquivos = new HashMap<String, Documento>();
-		for (File f : arquivosPasta) {
+		Map<String, Texto> mapaArquivos = new HashMap<String, Texto>();
+		for (File f : arquivos) {
 			if (f.isFile() && f.getName().endsWith(".txt")) {
-				Documento doc = new Documento(f.getPath());
-				tabelaArquivos.put(f.getName(), doc);
-				totalColisoes += doc.getTabela().getColisoes();
-				contadorDocumentos++;
+				Texto doc = new Texto(f.getPath());
+				mapaArquivos.put(f.getName(), doc);
+				somaColisoes += doc.getTabela().getColisoes();
+				numDocumentos++;
 			}
 		}
 
-		tempoLeituraDocumentos = System.currentTimeMillis() - inicio;
-		return tabelaArquivos;
+		tempoLeitura = System.currentTimeMillis() - inicio;
+		return mapaArquivos;
 	}
 
-	// Adicione este debug no método popularAVL para verificar:
-
-	public static AVL popularAVL(Map<String, Documento> tabelaArquivos) {
-		List<Documento> lista = new ArrayList<>(tabelaArquivos.values());
+	public static AVL construirAVL(Map<String, Texto> mapaArquivos) {
+		List<Texto> lista = new ArrayList<>(mapaArquivos.values());
 		AVL arvore = new AVL();
 
 		for (int i = 0; i < lista.size(); i++) {
 			for (int j = i + 1; j < lista.size(); j++) {
 
-				Documento docA = lista.get(i);
-				Documento docB = lista.get(j);
+				Texto docA = lista.get(i);
+				Texto docB = lista.get(j);
 
 				TabelaHash tabA = docA.getTabela();
 				TabelaHash tabB = docB.getTabela();
 
 				long inicioComp = System.currentTimeMillis();
-				ComparadorCosseno comparador = new ComparadorCosseno(tabA, tabB);
-				double similaridade = comparador.similaridade();
-				tempoComparacoes += System.currentTimeMillis() - inicioComp;
+				AnalisadorSimilaridade comparador = new AnalisadorSimilaridade(tabA, tabB);
+				double sim = comparador.calcularSimilaridade();
+				tempoComparacao += System.currentTimeMillis() - inicioComp;
 
-				// DEBUG: Imprimir cada similaridade calculada
-				System.out.println("DEBUG: " + docA.getNomeArquivo() + " <-> "
-						+ docB.getNomeArquivo() + " = " + similaridade);
+				ParComparacao res = new ParComparacao(docA.getNomeArquivo(), docB.getNomeArquivo(), sim);
 
-				Resultado res = new Resultado(docA.getNomeArquivo(), docB.getNomeArquivo(), similaridade);
+				long inicioIns = System.currentTimeMillis();
+				arvore.adicionar(res);
+				tempoInsercao += System.currentTimeMillis() - inicioIns;
 
-				long inicioInsercao = System.currentTimeMillis();
-				arvore.inserir(res);
-				tempoInsercaoAVL += System.currentTimeMillis() - inicioInsercao;
-
-				// DEBUG: Imprimir quantidade de nós após cada inserção
-				System.out.println("DEBUG: Nós na AVL = " + arvore.contarNos());
-
-				contadorComparacoes++;
+				numComparacoes++;
 			}
 		}
 
 		return arvore;
 	}
 
-	private static String formatarSaidaLista(double similaridade, List<Resultado> lista, AVL arvore) {
+	private static String montarSaidaLista(double similaridade, List<ParComparacao> lista, AVL arvore) {
 		StringBuilder sb = new StringBuilder();
 		String nl = System.lineSeparator();
 
 		sb.append("=== VERIFICADOR DE SIMILARIDADE DE TEXTOS ===").append(nl);
-		sb.append("Total de documentos processados: ").append(contadorDocumentos).append(nl);
-		sb.append("Total de pares comparados: ").append(contadorComparacoes).append(nl);
+		sb.append("Total de documentos processados: ").append(numDocumentos).append(nl);
+		sb.append("Total de pares comparados: ").append(numComparacoes).append(nl);
 		sb.append("Função hash utilizada: Double Hashing").append(nl);
 		sb.append("Métrica de similaridade: Cosseno").append(nl);
 		sb.append(nl);
 
-		// Estatísticas da AVL
 		sb.append("=== ESTATÍSTICAS DA AVL ===").append(nl);
-		sb.append("Altura da árvore: ").append(arvore.getAltura()).append(nl);
-		sb.append("Número de nós: ").append(arvore.contarNos()).append(nl);
-		sb.append("Rotações simples realizadas: ").append(arvore.getContadorRotacoesSimples()).append(nl);
-		sb.append("Rotações duplas realizadas: ").append(arvore.getContadorRotacoesDuplas()).append(nl);
-		sb.append("Total de rotações: ").append(arvore.getContadorRotacoesTotal()).append(nl);
+		sb.append("Altura da árvore: ").append(arvore.obterAlturArvore()).append(nl);
+		sb.append("Número de nós: ").append(arvore.contarTotalNos()).append(nl);
+		sb.append("Rotações simples realizadas: ").append(arvore.getQtdRotacoesSimples()).append(nl);
+		sb.append("Rotações duplas realizadas: ").append(arvore.getQtdRotacoesDuplas()).append(nl);
+		sb.append("Total de rotações: ").append(arvore.getQtdRotacoesTotal()).append(nl);
 		sb.append(nl);
 
-		// Estatísticas da Tabela Hash
 		sb.append("=== ESTATÍSTICAS DA TABELA HASH ===").append(nl);
-		sb.append("Total de colisões: ").append(totalColisoes).append(nl);
+		sb.append("Total de colisões: ").append(somaColisoes).append(nl);
 		sb.append(nl);
 
-		// Medições de tempo
 		sb.append("=== MEDIÇÕES DE TEMPO ===").append(nl);
-		sb.append("Tempo de leitura dos documentos: ").append(tempoLeituraDocumentos).append(" ms").append(nl);
-		sb.append("Tempo de comparações (similaridade): ").append(tempoComparacoes).append(" ms").append(nl);
-		sb.append("Tempo de inserção na AVL: ").append(tempoInsercaoAVL).append(" ms").append(nl);
-		sb.append("Tempo de busca na AVL: ").append(tempoBuscaAVL).append(" ms").append(nl);
-		sb.append("Tempo total de execução: ").append(tempoTotal).append(" ms").append(nl);
+		sb.append("Tempo de leitura dos documentos: ").append(String.format("%.4f", tempoLeitura)).append(" ms").append(nl);
+		sb.append("Tempo de comparações (similaridade): ").append(String.format("%.4f", tempoComparacao)).append(" ms").append(nl);
+		sb.append("Tempo de inserção na AVL: ").append(String.format("%.4f", tempoInsercao)).append(" ms").append(nl);
+		sb.append("Tempo de busca na AVL: ").append(String.format("%.4f", tempoBusca)).append(" ms").append(nl);
+		sb.append("Tempo total de execução: ").append(String.format("%.4f", tempoExecucao)).append(" ms").append(nl);
 		sb.append(nl);
 
 		sb.append("Pares com similaridade >= ").append(similaridade).append(":").append(nl);
@@ -194,7 +180,7 @@ public class Main {
 		if (lista.isEmpty()) {
 			sb.append("Nenhum par encontrado.").append(nl);
 		} else {
-			for (Resultado r : lista) {
+			for (ParComparacao r : lista) {
 				sb.append(r.getArquivoA()).append(" <-> ").append(r.getArquivoB())
 						.append(" = ").append(String.format("%.4f", r.getSimilaridade())).append(nl);
 			}
@@ -204,7 +190,7 @@ public class Main {
 		sb.append("Pares com menor similaridade:").append(nl);
 		sb.append("---------------------------------").append(nl);
 
-		Resultado menor = arvore.getResultadoMenorSimilaridade();
+		ParComparacao menor = arvore.obterMenorSimilaridade();
 		if (menor != null) {
 			sb.append(menor.getArquivoA()).append(" <-> ").append(menor.getArquivoB())
 					.append(" = ").append(String.format("%.4f", menor.getSimilaridade())).append(nl);
@@ -215,47 +201,47 @@ public class Main {
 		return sb.toString();
 	}
 
-	private static String formatarSaidaBusca(String arquivoA, String arquivoB, double similaridade) {
+	private static String montarSaidaBusca(String arqA, String arqB, double similaridade) {
 		StringBuilder sb = new StringBuilder();
 		String nl = System.lineSeparator();
 
 		sb.append("=== VERIFICADOR DE SIMILARIDADE DE TEXTOS ===").append(nl);
-		sb.append("Comparando: ").append(arquivoA).append(" <-> ").append(arquivoB).append(nl);
+		sb.append("Comparando: ").append(arqA).append(" <-> ").append(arqB).append(nl);
 		sb.append("Similaridade calculada: ").append(String.format("%.4f", similaridade)).append(nl);
 		sb.append("Métrica de similaridade: Cosseno").append(nl);
 		sb.append(nl);
 		sb.append("=== MEDIÇÕES DE TEMPO ===").append(nl);
-		sb.append("Tempo total de execução: ").append(tempoTotal).append(" ms").append(nl);
+		sb.append("Tempo total de execução: ").append(String.format("%.4f", tempoExecucao)).append(" ms").append(nl);
 
 		return sb.toString();
 	}
 
-	public static void printarSaida(double similaridade, List<Resultado> lista, AVL arvore) {
-		String saida = formatarSaidaLista(similaridade, lista, arvore);
+	public static void exibirResultado(double similaridade, List<ParComparacao> lista, AVL arvore) {
+		String saida = montarSaidaLista(similaridade, lista, arvore);
 		System.out.println(saida);
 	}
 
-	public static void printarSaida(String arquivoA, String arquivoB, double similaridade) {
-		String saida = formatarSaidaBusca(arquivoA, arquivoB, similaridade);
+	public static void exibirResultado(String arqA, String arqB, double similaridade) {
+		String saida = montarSaidaBusca(arqA, arqB, similaridade);
 		System.out.println(saida);
 	}
 
-	public static void gerarLog(String nomeArquivoLog, double similaridade, List<Resultado> lista, AVL arvore)
+	public static void salvarLog(String nomeArquivo, double similaridade, List<ParComparacao> lista, AVL arvore)
 			throws IOException {
-		String conteudoLog = formatarSaidaLista(similaridade, lista, arvore);
-		Path caminhoLog = Path.of(nomeArquivoLog);
+		String conteudo = montarSaidaLista(similaridade, lista, arvore);
+		Path caminhoLog = Path.of(nomeArquivo);
 
-		Files.writeString(caminhoLog, conteudoLog, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+		Files.writeString(caminhoLog, conteudo, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
 		System.out.println("Log gerado em: " + caminhoLog.toAbsolutePath());
 	}
 
-	public static void gerarLog(String nomeArquivoLog, String arquivoA, String arquivoB, double similaridade)
+	public static void salvarLog(String nomeArquivo, String arqA, String arqB, double similaridade)
 			throws IOException {
-		String conteudoLog = formatarSaidaBusca(arquivoA, arquivoB, similaridade);
-		Path caminhoLog = Path.of(nomeArquivoLog);
+		String conteudo = montarSaidaBusca(arqA, arqB, similaridade);
+		Path caminhoLog = Path.of(nomeArquivo);
 
-		Files.writeString(caminhoLog, conteudoLog, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+		Files.writeString(caminhoLog, conteudo, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
 		System.out.println("Log gerado em: " + caminhoLog.toAbsolutePath());
 	}

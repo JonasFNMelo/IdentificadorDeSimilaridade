@@ -1,90 +1,90 @@
 package projeto;
 
 public class TabelaHash {
-    private int m;
-    private NoHash[] dicio;
-    private int qtdColisoes;
+    private int capacidade;
+    private NoHash[] elementos;
+    private int numColisoes;
 
-    public TabelaHash(int m){
-        this.m = m;
-        this.dicio = new NoHash[m];
-        this.qtdColisoes = 0;
+    public TabelaHash(int capacidade){
+        this.capacidade = capacidade;
+        this.elementos = new NoHash[capacidade];
+        this.numColisoes = 0;
     }
 
-    private int dispersao1(String palavra){
+    private int hashPrimario(String palavra){
         int aux = 0;
         for (int i = 0; i < palavra.length(); i++){
-            aux = (31 * aux + palavra.charAt(i)) % this.m;
+            aux = (31 * aux + palavra.charAt(i)) % this.capacidade;
         }
-        if (aux < 0) aux += this.m; // Garantir valor positivo
+        if (aux < 0) aux += this.capacidade;
         return aux;
     }
 
-    private int dispersao2(String palavra) {
+    private int hashSecundario(String palavra) {
         int hash = palavra.hashCode();
-        int h2 = (hash & 0x7fffffff) % (this.m - 1) + 1; // Garante h2 >= 1
+        int h2 = (hash & 0x7fffffff) % (this.capacidade - 1) + 1;
         return h2;
     } 
 
     public void inserir(String palavra, int frequencia) {
-        int h1 = dispersao1(palavra);
-        int h2 = dispersao2(palavra);
+        int h1 = hashPrimario(palavra);
+        int h2 = hashSecundario(palavra);
 
-        int index = h1;
+        int pos = h1;
         int tentativas = 0;
 
-        while (dicio[index] != null && !dicio[index].getPalavra().equals(palavra)) {
+        while (elementos[pos] != null && !elementos[pos].getPalavra().equals(palavra)) {
             tentativas++;
-            qtdColisoes++;
-            index = (h1 + tentativas * h2) % m;
+            numColisoes++;
+            pos = (h1 + tentativas * h2) % capacidade;
 
-            if (tentativas >= m) {
+            if (tentativas >= capacidade) {
                 System.err.println("TabelaHash cheia! Não foi possível inserir: " + palavra);
                 return;
             }
         }
 
-        if (dicio[index] != null && dicio[index].getPalavra().equals(palavra)) {
-            dicio[index].setFrequencia(dicio[index].getFrequencia() + frequencia);
+        if (elementos[pos] != null && elementos[pos].getPalavra().equals(palavra)) {
+            elementos[pos].setFrequencia(elementos[pos].getFrequencia() + frequencia);
         } else {
-            dicio[index] = new NoHash(palavra, frequencia);
+            elementos[pos] = new NoHash(palavra, frequencia);
         }
     }
 
-    public int busca(String palavra) {
-        int h1 = dispersao1(palavra);
-        int h2 = dispersao2(palavra);
+    public int procurar(String palavra) {
+        int h1 = hashPrimario(palavra);
+        int h2 = hashSecundario(palavra);
 
-        int index = h1;
+        int pos = h1;
         int tentativas = 0;
 
-        while (this.dicio[index] != null && tentativas < m) {
-            if (this.dicio[index].getPalavra().equals(palavra)) {
-                return this.dicio[index].getFrequencia();
+        while (this.elementos[pos] != null && tentativas < capacidade) {
+            if (this.elementos[pos].getPalavra().equals(palavra)) {
+                return this.elementos[pos].getFrequencia();
             }
             tentativas++;
-            index = (h1 + tentativas * h2) % m;
+            pos = (h1 + tentativas * h2) % capacidade;
         }
 
         return -1;
     }
 
     public int getColisoes(){
-        return this.qtdColisoes;
+        return this.numColisoes;
     }
 
-    public int getM(){
-        return this.m;
+    public int getTamanho(){
+        return this.capacidade;
     }
 
-    public NoHash at(int i) {
-        return this.dicio[i];
+    public NoHash obterPosicao(int i) {
+        return this.elementos[i];
     }
 
-    public void printDicio(){
-        for(int i = 0; i < this.m; i++){
-            if(this.dicio[i] != null) {
-                System.out.println(this.dicio[i].getPalavra()+ ": " + this.dicio[i].getFrequencia());
+    public void mostrarConteudo(){
+        for(int i = 0; i < this.capacidade; i++){
+            if(this.elementos[i] != null) {
+                System.out.println(this.elementos[i].getPalavra()+ ": " + this.elementos[i].getFrequencia());
             }
         }
     }

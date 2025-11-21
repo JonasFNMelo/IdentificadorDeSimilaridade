@@ -1,0 +1,6 @@
+Inteligência artificial está transformando o mundo da tecnologia.
+Redes neurais são inspiradas no funcionamento do cérebro humano.
+O aprendizado de máquina permite que sistemas melhorem com experiência.
+Algoritmos de deep learning processam grandes volumes de dados.
+Visão computacional permite que máquinas interpretem imagens.
+Processamento de linguagem natural analisa textos automaticamente.
