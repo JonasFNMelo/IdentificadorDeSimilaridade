@@ -1,0 +1,30 @@
+=== VERIFICADOR DE SIMILARIDADE DE TEXTOS ===
+Total de documentos processados: 5
+Total de pares comparados: 10
+Função hash utilizada: Double Hashing
+Métrica de similaridade: Cosseno
+
+=== ESTATÍSTICAS DA AVL ===
+Altura da árvore: 1
+Número de nós: 1
+Rotações simples realizadas: 0
+Rotações duplas realizadas: 0
+Total de rotações: 0
+
+=== ESTATÍSTICAS DA TABELA HASH ===
+Total de colisões: 0
+
+=== MEDIÇÕES DE TEMPO ===
+Tempo de leitura dos documentos: 5 ms
+Tempo de comparações (similaridade): 0 ms
+Tempo de inserção na AVL: 0 ms
+Tempo de busca na AVL: 0 ms
+Tempo total de execução: 10 ms
+
+Pares com similaridade >= 0.5:
+---------------------------------
+Nenhum par encontrado.
+
+Pares com menor similaridade:
+---------------------------------
+arquivo1.txt <-> arquivo2.txt = 0,0000
