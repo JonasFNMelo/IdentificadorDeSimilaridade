@@ -3,8 +3,8 @@ package projeto;
 import java.util.HashSet;
 import java.util.Set;
 
-class StopWords {
-	private static final Set<String> STOPWORDS = new HashSet<>(Set.of(
+class PalavrasIgnoradas {
+	private static final Set<String> PALAVRAS_IGNORADAS = new HashSet<>(Set.of(
 	        "a", "o", "as", "os", "um", "uma", "uns", "umas",
 	        "de", "da", "do", "das", "dos",
 	        "em", "no", "na", "nos", "nas",
@@ -15,7 +15,7 @@ class StopWords {
 	        "já", "não", "sim", "tão", "muito", "pouco"
 	    ));
 
-	    public static boolean eStopWord(String palavra) {
-	        return STOPWORDS.contains(palavra);
+	    public static boolean verificarStopWord(String palavra) {
+	        return PALAVRAS_IGNORADAS.contains(palavra);
 	    }
 }

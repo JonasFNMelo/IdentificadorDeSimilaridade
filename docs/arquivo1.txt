@@ -1,0 +1,6 @@
+Estruturas de dados são fundamentais para a ciência da computação. 
+Uma árvore binária de busca permite organizar elementos de forma hierárquica.
+A árvore AVL é uma árvore binária balanceada que garante operações eficientes.
+O balanceamento é mantido através de rotações simples e duplas.
+Tabelas hash oferecem acesso rápido aos dados através de funções de dispersão.
+Colisões podem ser tratadas com encadeamento ou endereçamento aberto.

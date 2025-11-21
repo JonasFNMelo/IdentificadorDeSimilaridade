@@ -1,0 +1,6 @@
+Estruturas de dados são essenciais na ciência da computação moderna.
+Árvores binárias de busca organizam dados de maneira hierárquica e eficiente.
+A árvore AVL mantém o balanceamento através de rotações durante inserções.
+Rotações simples e duplas garantem que a árvore permaneça balanceada.
+Tabelas hash utilizam funções de dispersão para acesso rápido aos elementos.
+O tratamento de colisões é fundamental para o bom funcionamento da hash.

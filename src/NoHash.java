@@ -1,28 +1,27 @@
 package projeto;
 
 public class NoHash {
-    private String palavra;
-    private int frequencia;
+    private String termo;
+    private int ocorrencias;
 
-    public NoHash(String palavra, int frequencia){
-        this.palavra = palavra;
-        this.frequencia = frequencia;
+    public NoHash(String termo, int ocorrencias){
+        this.termo = termo;
+        this.ocorrencias = ocorrencias;
     }
 
     public int getFrequencia() {
-        return frequencia;
+        return ocorrencias;
     }
 
     public String getPalavra() {
-        return palavra;
+        return termo;
     }
 
-    public void setFrequencia(int frequencia) {
-        this.frequencia = frequencia;
+    public void setFrequencia(int freq) {
+        this.ocorrencias = freq;
     }
 
     public void setPalavra(String palavra) {
-        this.palavra = palavra;
+        this.termo = palavra;
     }
-
 }

@@ -5,26 +5,28 @@ Função hash utilizada: Double Hashing
 Métrica de similaridade: Cosseno
 
 === ESTATÍSTICAS DA AVL ===
-Altura da árvore: 1
-Número de nós: 1
-Rotações simples realizadas: 0
-Rotações duplas realizadas: 0
-Total de rotações: 0
+Altura da árvore: 4
+Número de nós: 10
+Rotações simples realizadas: 3
+Rotações duplas realizadas: 1
+Total de rotações: 5
 
 === ESTATÍSTICAS DA TABELA HASH ===
-Total de colisões: 0
+Total de colisões: 7
 
 === MEDIÇÕES DE TEMPO ===
-Tempo de leitura dos documentos: 5 ms
-Tempo de comparações (similaridade): 0 ms
-Tempo de inserção na AVL: 0 ms
-Tempo de busca na AVL: 0 ms
-Tempo total de execução: 10 ms
+Tempo de leitura dos documentos: 6,0000 ms
+Tempo de comparações (similaridade): 1,0000 ms
+Tempo de inserção na AVL: 1,0000 ms
+Tempo de busca na AVL: 0,0000 ms
+Tempo total de execução: 8,0000 ms
 
-Pares com similaridade >= 0.5:
+Pares com similaridade >= 0.01:
 ---------------------------------
-Nenhum par encontrado.
+arquivo1.txt <-> arquivo2.txt = 0,6384
+arquivo5.txt <-> arquivo4.txt = 0,3334
+arquivo2.txt <-> arquivo5.txt = 0,3048
 
 Pares com menor similaridade:
 ---------------------------------
-arquivo1.txt <-> arquivo2.txt = 0,0000
+arquivo5.txt <-> arquivo3.txt = 0,0658
