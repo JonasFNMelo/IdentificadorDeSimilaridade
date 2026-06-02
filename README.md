@@ -10,9 +10,9 @@ A documentação completa do processo de engenharia está disponível no arquivo
 
 ## Funcionalidades
 
-- 📄 Leitura e processamento de arquivos de texto
-- 🔍 Comparação entre documentos para identificação de similaridade
-- 📊 Geração de resultados em arquivo de saída (`resultado.txt`)
+- Leitura e processamento de arquivos de texto
+- Comparação entre documentos para identificação de similaridade
+- Geração de resultados em arquivo de saída (`resultado.txt`)
 
 ## Tecnologias
 
